@@ -1,2 +1,2 @@
-# gopto
-Go library for using Optionals
+# nilo
+*Go library for using Optionals (partially inspired in Java Optionals)*
