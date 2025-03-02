@@ -2,7 +2,7 @@
 *Go Optionals library for handling nil values and some errors (partially inspired in Java Optionals)*
 
 ## Caveats
-- This plugin requires Go 1.23
+- This library requires Go 1.23+
 
 ## Intallation
 ```bash
