@@ -17,9 +17,8 @@ func (o Optional[T]) Get() T {
 func (o Optional[T]) OrElse(other T) T {
 	if o.IsPresent() {
 		return o.Get()
-	} else {
-		return other
 	}
+	return other
 }
 
 // OrError returns the value contained in the Optional if present; otherwise, it returns the provided error.
@@ -27,9 +26,8 @@ func (o Optional[T]) OrElse(other T) T {
 func (o Optional[T]) OrError(err error) (*T, error) {
 	if o.IsPresent() {
 		return o.value, nil
-	} else {
-		return nil, err
 	}
+	return nil, err
 }
 
 // Or returns the value contained in the Optional if present; otherwise, it invokes the provided supplier function
@@ -37,26 +35,24 @@ func (o Optional[T]) OrError(err error) (*T, error) {
 func (o Optional[T]) Or(supplier func() Optional[T]) Optional[T] {
 	if o.IsEmpty() {
 		return supplier()
-	} else {
-		return From(o.Get())
 	}
+	return Of(o.Get())
 }
 
 // Filter returns an Optional containing the value if it is present and satisfies the provided filter function;
 // otherwise, it returns an empty Optional.
 func (o Optional[T]) Filter(filter func(T) bool) Optional[T] {
 	if o.IsPresent() && filter(o.Get()) {
-		return From(o.Get())
-	} else {
-		return Empty[T]()
+		return Of(o.Get())
 	}
+	return Empty[T]()
 }
 
 // MapToAny applies the provided mapper function to the value contained in the Optional if present,
 // returning a new Optional containing the mapped value; otherwise, it returns an empty Optional.
 func (o Optional[T]) MapToAny(mapper func(T) any) Optional[any] {
 	if o.IsPresent() {
-		return From(mapper(o.Get()))
+		return Of(mapper(o.Get()))
 	}
 	return Empty[any]()
 }
@@ -65,7 +61,7 @@ func (o Optional[T]) MapToAny(mapper func(T) any) Optional[any] {
 // returning a new Optional containing the mapped string value; otherwise, it returns an empty Optional.
 func (o Optional[T]) MapToString(mapper func(T) string) Optional[string] {
 	if o.IsPresent() {
-		return From(mapper(o.Get()))
+		return Of(mapper(o.Get()))
 	}
 	return Empty[string]()
 }
@@ -74,7 +70,7 @@ func (o Optional[T]) MapToString(mapper func(T) string) Optional[string] {
 // returning a new Optional containing the mapped int value; otherwise, it returns an empty Optional.
 func (o Optional[T]) MapToInt(mapper func(T) int) Optional[int] {
 	if o.IsPresent() {
-		return From(mapper(o.Get()))
+		return Of(mapper(o.Get()))
 	}
 	return Empty[int]()
 }
@@ -100,18 +96,16 @@ func (o Optional[T]) IfPresent(consumer func(T)) {
 func (o Optional[T]) IfPresentOrElse(consumer func(T), or func()) {
 	if o.IsPresent() {
 		consumer(o.Get())
-	} else {
-		or()
 	}
+	or()
 }
 
 // OrElseGet returns the value contained in the Optional if present; otherwise, it invokes the provided supplier function to obtain the value.
 func (o Optional[T]) OrElseGet(supplier func() T) T {
 	if o.IsPresent() {
 		return o.Get()
-	} else {
-		return supplier()
 	}
+	return supplier()
 }
 
 // Empty returns an empty Optional.
@@ -119,22 +113,52 @@ func Empty[T any]() Optional[T] {
 	return Optional[T]{}
 }
 
-// From creates an Optional containing the provided value.
-func From[T any](value T) Optional[T] {
-	return Optional[T]{&value}
+// Of creates an Optional containing the provided value.
+func Of[T any](value T) Optional[T] {
+	return OfPtr(&value)
 }
 
-// FromPtr creates an Optional from a pointer to a value.
+// OfPtr creates an Optional from a pointer to a value.
 // If the pointer is nil, it returns an empty Optional.
-func FromPtr[T any](value *T) Optional[T] {
+func OfPtr[T any](value *T) Optional[T] {
 	return Optional[T]{value}
+}
+
+// FromTuplePtr takes a pointer value and error tuple
+// creates an Optional containing the provided value if err is nil.
+func FromTuplePtr[T any](value *T, err error) Optional[T] {
+	if err != nil {
+		return Empty[T]()
+	}
+	return OfPtr(value)
+}
+
+// FromTuple takes a value and error tuple
+// creates an Optional containing the provided value if err is nil.
+func FromTuple[T any](value T, err error) Optional[T] {
+	return FromTuplePtr(&value, err)
+}
+
+// AndThenPtr takes a pointer value and error tuple
+// creates an Optional containing the provided value if error is nil.
+func (o Optional[T]) AndThenPtr(other *T, err error) Optional[T] {
+	if o.IsPresent() && err == nil {
+		return OfPtr(other)
+	}
+	return Empty[T]()
+}
+
+// AndThen takes a value and error tuple
+// creates an Optional containing the provided value if error is nil.
+func (o Optional[T]) AndThen(other T, err error) Optional[T] {
+	return o.AndThenPtr(&other, err)
 }
 
 // Map applies the provided mapper function to the value contained in the Optional if present,
 // returning a new Optional containing the mapped value; otherwise, it returns an empty Optional.
 func Map[T, R any](o Optional[T], mapper func(T) R) Optional[R] {
 	if o.IsPresent() {
-		return From(mapper(o.Get()))
+		return Of(mapper(o.Get()))
 	}
 	return Empty[R]()
 }

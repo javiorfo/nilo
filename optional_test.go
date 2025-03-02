@@ -11,7 +11,7 @@ import (
 func TestOptional(t *testing.T) {
 	t.Run("Get", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := From(42)
+			opt := Of(42)
 			assert.Equal(t, 42, opt.Get())
 		})
 
@@ -25,7 +25,7 @@ func TestOptional(t *testing.T) {
 
 	t.Run("OrElse", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := From(42)
+			opt := Of(42)
 			assert.Equal(t, 42, opt.OrElse(24))
 		})
 
@@ -37,7 +37,7 @@ func TestOptional(t *testing.T) {
 
 	t.Run("OrError", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := From(42)
+			opt := Of(42)
 			value, err := opt.OrError(errors.New("error"))
 			assert.Equal(t, 42, *value)
 			assert.NoError(t, err)
@@ -53,30 +53,30 @@ func TestOptional(t *testing.T) {
 
 	t.Run("Or", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := From(42)
+			opt := Of(42)
 			assert.Equal(t, 42, opt.Or(func() Optional[int] {
-				return From(24)
+				return Of(24)
 			}).Get())
 		})
 
 		t.Run("when value is not present", func(t *testing.T) {
 			opt := Empty[int]()
 			assert.Equal(t, 24, opt.Or(func() Optional[int] {
-				return From(24)
+				return Of(24)
 			}).Get())
 		})
 	})
 
 	t.Run("Filter", func(t *testing.T) {
 		t.Run("when value satisfies the filter", func(t *testing.T) {
-			opt := From(42)
+			opt := Of(42)
 			assert.Equal(t, 42, opt.Filter(func(i int) bool {
 				return i > 0
 			}).Get())
 		})
 
 		t.Run("when value does not satisfy the filter", func(t *testing.T) {
-			opt := From(42)
+			opt := Of(42)
 			assert.True(t, opt.Filter(func(i int) bool {
 				return i < 0
 			}).IsEmpty())
@@ -92,7 +92,7 @@ func TestOptional(t *testing.T) {
 
 	t.Run("MapToAny", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := From(42)
+			opt := Of(42)
 			assert.Equal(t, 84, opt.MapToAny(func(i int) any {
 				return i * 2
 			}).Get())
@@ -108,7 +108,7 @@ func TestOptional(t *testing.T) {
 
 	t.Run("MapToString", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := From(42)
+			opt := Of(42)
 			assert.Equal(t, "Value 42", opt.MapToString(func(i int) string {
 				return fmt.Sprintf("Value %d", i)
 			}).Get())
@@ -124,7 +124,7 @@ func TestOptional(t *testing.T) {
 
 	t.Run("IsEmpty", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := From(42)
+			opt := Of(42)
 			assert.False(t, opt.IsEmpty())
 		})
 
@@ -136,7 +136,7 @@ func TestOptional(t *testing.T) {
 
 	t.Run("IsPresent", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := From(42)
+			opt := Of(42)
 			assert.True(t, opt.IsPresent())
 		})
 
@@ -148,7 +148,7 @@ func TestOptional(t *testing.T) {
 
 	t.Run("IfPresent", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := From(42)
+			opt := Of(42)
 			var result int
 			opt.IfPresent(func(i int) {
 				result = i
@@ -168,7 +168,7 @@ func TestOptional(t *testing.T) {
 
 	t.Run("IfPresentOrElse", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := From(42)
+			opt := Of(42)
 			var result int
 			opt.IfPresentOrElse(func(i int) {
 				result = i
@@ -192,7 +192,7 @@ func TestOptional(t *testing.T) {
 
 	t.Run("OrElseGet", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := From(42)
+			opt := Of(42)
 			assert.Equal(t, 42, opt.OrElseGet(func() int {
 				return 24
 			}))
@@ -211,28 +211,58 @@ func TestOptional(t *testing.T) {
 		assert.True(t, opt.IsEmpty())
 	})
 
-	t.Run("From", func(t *testing.T) {
-		opt := From(42)
+	t.Run("Of", func(t *testing.T) {
+		opt := Of(42)
 		assert.Equal(t, 42, opt.Get())
 	})
 
-	t.Run("FromPtr", func(t *testing.T) {
+	t.Run("OfPtr", func(t *testing.T) {
 		t.Run("when value is not nil", func(t *testing.T) {
 			value := 42
-			opt := FromPtr(&value)
+			opt := OfPtr(&value)
 			assert.Equal(t, 42, opt.Get())
 		})
 
 		t.Run("when value is nil", func(t *testing.T) {
 			var value *int
-			opt := FromPtr(value)
+			opt := OfPtr(value)
+			assert.True(t, opt.IsEmpty())
+		})
+	})
+
+	t.Run("FromTuplePtr", func(t *testing.T) {
+		function := func(b bool) (*int, error) {
+			if b {
+				integer := 10
+				return &integer, nil
+			}
+			return nil, errors.New("some error")
+		}
+
+		t.Run("when value is not nil", func(t *testing.T) {
+			opt := FromTuplePtr(function(true))
+			assert.Equal(t, 10, opt.Get())
+		})
+
+		t.Run("when value is nil", func(t *testing.T) {
+			opt := FromTuplePtr(function(false))
+			assert.True(t, opt.IsEmpty())
+		})
+
+		t.Run("AndThen when value is not nil", func(t *testing.T) {
+			opt := FromTuplePtr(function(true)).AndThenPtr(function(true))
+			assert.Equal(t, 10, opt.Get())
+		})
+
+		t.Run("AndThen when value is nil", func(t *testing.T) {
+			opt := FromTuplePtr(function(true)).AndThenPtr(function(false))
 			assert.True(t, opt.IsEmpty())
 		})
 	})
 
 	t.Run("Map", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := From(42)
+			opt := Of(42)
 			mapped := Map(opt, func(i int) string {
 				return fmt.Sprintf("value: %d", i)
 			})
