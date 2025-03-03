@@ -26,11 +26,11 @@ func main() {
   var numbers []int
 
   evenNumbersOpt := nilo.Of(numbers).Filter(func(n []int) bool {
-	return slices.Contains(n, 1)
+    return slices.Contains(n, 1)
   })
 
   if evenNumbersOpt.IsPresent() {
-	fmt.Println("One is present")
+    fmt.Println("One is present")
   } 
 
   nilo.FromTuple(getUser(true)).AndThen(getUser2).IfPresent(print)
