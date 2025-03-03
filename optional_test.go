@@ -216,16 +216,16 @@ func TestOptional(t *testing.T) {
 		assert.Equal(t, 42, opt.Get())
 	})
 
-	t.Run("OfPtr", func(t *testing.T) {
+	t.Run("OfPointer", func(t *testing.T) {
 		t.Run("when value is not nil", func(t *testing.T) {
 			value := 42
-			opt := OfPtr(&value)
+			opt := OfPointer(&value)
 			assert.Equal(t, 42, opt.Get())
 		})
 
 		t.Run("when value is nil", func(t *testing.T) {
 			var value *int
-			opt := OfPtr(value)
+			opt := OfPointer(value)
 			assert.True(t, opt.IsEmpty())
 		})
 	})
@@ -239,23 +239,31 @@ func TestOptional(t *testing.T) {
 			return nil, errors.New("some error")
 		}
 
+		function2 := func(p *int) (*int, error) {
+			if *p == 0 {
+				return nil, errors.New("some error 2")
+			}
+			r := *p + 1
+			return &r, nil
+		}
+
 		t.Run("when value is not nil", func(t *testing.T) {
-			opt := FromTuplePtr(function(true))
-			assert.Equal(t, 10, opt.Get())
+			opt := FromTuple(function(true))
+			assert.Equal(t, 10, *opt.Get())
 		})
 
 		t.Run("when value is nil", func(t *testing.T) {
-			opt := FromTuplePtr(function(false))
+			opt := FromTuple(function(false))
 			assert.True(t, opt.IsEmpty())
 		})
 
 		t.Run("AndThen when value is not nil", func(t *testing.T) {
-			opt := FromTuplePtr(function(true)).AndThenPtr(function(true))
-			assert.Equal(t, 10, opt.Get())
+			opt := FromTuple(function(true)).AndThen(function2)
+			assert.Equal(t, 11, *opt.Get())
 		})
 
 		t.Run("AndThen when value is nil", func(t *testing.T) {
-			opt := FromTuplePtr(function(true)).AndThenPtr(function(false))
+			opt := FromTuple(function(false)).AndThen(function2)
 			assert.True(t, opt.IsEmpty())
 		})
 	})

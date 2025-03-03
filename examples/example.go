@@ -19,7 +19,7 @@ func main() {
 		fmt.Println("One is present")
 	}
 
-	nilo.FromTuplePtr(getUser(true)).AndThen(getUser2(true)).IfPresent(print)
+	nilo.FromTuple(getUser(true)).AndThen(getUser2).IfPresent(print)
 
 	_, err := test(false).OrError(errors.New("some err"))
 	fmt.Println(err.Error())
@@ -34,8 +34,8 @@ func test(b bool) nilo.Optional[string] {
 	return nilo.Empty[string]()
 }
 
-func print[T any](v T) {
-	fmt.Printf("Value: %#v\n", v)
+func print[T any](v *T) {
+	fmt.Printf("Value: %#v\n", *v)
 }
 
 func getUser(b bool) (*int, error) {
@@ -46,9 +46,10 @@ func getUser(b bool) (*int, error) {
 	return nil, errors.New("error")
 }
 
-func getUser2(b bool) (int, error) {
-	if b {
-		return 2, nil
+func getUser2(v *int) (*int, error) {
+	if *v == 0 {
+		return nil, errors.New("error")
 	}
-	return 0, errors.New("error")
+	i := *v + 2
+	return &i, nil
 }

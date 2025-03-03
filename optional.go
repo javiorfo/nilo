@@ -96,8 +96,9 @@ func (o Optional[T]) IfPresent(consumer func(T)) {
 func (o Optional[T]) IfPresentOrElse(consumer func(T), or func()) {
 	if o.IsPresent() {
 		consumer(o.Get())
+	} else {
+		or()
 	}
-	or()
 }
 
 // OrElseGet returns the value contained in the Optional if present; otherwise, it invokes the provided supplier function to obtain the value.
@@ -115,43 +116,34 @@ func Empty[T any]() Optional[T] {
 
 // Of creates an Optional containing the provided value.
 func Of[T any](value T) Optional[T] {
-	return OfPtr(&value)
+	return Optional[T]{&value}
 }
 
-// OfPtr creates an Optional from a pointer to a value.
+// OfPointer creates an Optional from a pointer to a value.
 // If the pointer is nil, it returns an empty Optional.
-func OfPtr[T any](value *T) Optional[T] {
+func OfPointer[T any](value *T) Optional[T] {
 	return Optional[T]{value}
-}
-
-// FromTuplePtr takes a pointer value and error tuple
-// creates an Optional containing the provided value if err is nil.
-func FromTuplePtr[T any](value *T, err error) Optional[T] {
-	if err != nil {
-		return Empty[T]()
-	}
-	return OfPtr(value)
 }
 
 // FromTuple takes a value and error tuple
 // creates an Optional containing the provided value if err is nil.
 func FromTuple[T any](value T, err error) Optional[T] {
-	return FromTuplePtr(&value, err)
+	if err != nil {
+		return Empty[T]()
+	}
+	return OfPointer(&value)
 }
 
-// AndThenPtr takes a pointer value and error tuple
+// AndThen takes a function with optional type parameter and returns
+// the same type or an error
 // creates an Optional containing the provided value if error is nil.
-func (o Optional[T]) AndThenPtr(other *T, err error) Optional[T] {
-	if o.IsPresent() && err == nil {
-		return OfPtr(other)
+func (o Optional[T]) AndThen(apply func(T) (T, error)) Optional[T] {
+	if o.IsPresent() {
+		if r, err := apply(*o.value); err == nil {
+			return OfPointer(&r)
+		}
 	}
 	return Empty[T]()
-}
-
-// AndThen takes a value and error tuple
-// creates an Optional containing the provided value if error is nil.
-func (o Optional[T]) AndThen(other T, err error) Optional[T] {
-	return o.AndThenPtr(&other, err)
 }
 
 // Map applies the provided mapper function to the value contained in the Optional if present,
