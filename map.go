@@ -19,6 +19,25 @@ func (o Option[T]) Map(mapper func(T) T) Option[T] {
 	return None[T]()
 }
 
+// MapToAny maps the contained value of an `Option[T]` to an any if it is `Some`,
+// and returns a new `Option[any]` with the result.
+//
+// If the original `Option` is `None`, this method returns `None[any]`.
+//
+// Parameters:
+//   - mapper: The function to apply to the `Option`'s value. It takes a value
+//     of type `T` and returns an `any`.
+//
+// Returns:
+//   - A new `Option[any]` containing the mapped value, or `None[any]`
+//     if the original `Option` was `None`.
+func (o Option[T]) MapToAny(mapper func(T) any) Option[any] {
+	if o.IsSome() {
+		return Some(mapper(o.Unwrap()))
+	}
+	return None[any]()
+}
+
 // MapToString maps the contained value of an `Option[T]` to a string if it is `Some`,
 // and returns a new `Option[string]` with the result.
 //
@@ -89,6 +108,19 @@ func (o Option[T]) MapOr(def T, mapper func(T) T) T {
 	return def
 }
 
+// MapOrAny maps the `Option`'s value to a string if it is `Some` and
+// returns the result, otherwise returns a default any.
+//
+// Parameters:
+//   - def: The default any to return if the `Option` is `None`.
+//   - mapper: A function to apply to the `Option`'s value to produce an any.
+func (o Option[T]) MapOrAny(def any, mapper func(T) any) any {
+	if o.IsSome() {
+		return mapper(o.Unwrap())
+	}
+	return def
+}
+
 // MapOrString maps the `Option`'s value to a string if it is `Some` and
 // returns the result, otherwise returns a default string.
 //
@@ -137,6 +169,21 @@ func (o Option[T]) MapOrBool(def bool, mapper func(T) bool) bool {
 //	- supplier: A function that provides the default value if the `Option` is `None`.
 //	- mapper: A function to apply to the `Option`'s value if it is `Some`.
 func (o Option[T]) MapOrElse(supplier func() T, mapper func(T) T) T {
+	if o.IsSome() {
+		return mapper(o.Unwrap())
+	}
+	return supplier()
+}
+
+// MapOrElseAny maps the `Option`'s value to an any if it is `Some`,
+// otherwise calls a supplier function to get the default any.
+//
+// Parameters:
+//
+//	  the function signature).
+//	- supplier: A function that provides the default any if the `Option` is `None`.
+//	- mapper: A function to apply to the `Option`'s value to produce an any.
+func (o Option[T]) MapOrElseAny(supplier func() any, mapper func(T) any) any {
 	if o.IsSome() {
 		return mapper(o.Unwrap())
 	}

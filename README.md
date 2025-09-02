@@ -180,14 +180,17 @@ func (o *Option[T]) GetOrInsert(value T) T
 func (o *Option[T]) GetOrInsertWith(supplier func() T)
 func (o *Option[T]) GetOrInsertDefault() T
 func (o Option[T]) Map(mapper func(T) T) Option[T]
+func (o Option[T]) MapToAny(mapper func(T) any) Option[any]
 func (o Option[T]) MapToString(mapper func(T) string) Option[string]
 func (o Option[T]) MapToInt(mapper func(T) int) Option[int]
 func (o Option[T]) MapToBool(mapper func(T) bool) Option[bool]
 func (o Option[T]) MapOr(def T, mapper func(T) T) T
+func (o Option[T]) MapOrAny(def any, mapper func(T) any) any
 func (o Option[T]) MapOrString(def string, mapper func(T) string) string
 func (o Option[T]) MapOrInt(def int, mapper func(T) int) int
 func (o Option[T]) MapOrBool(def bool, mapper func(T) bool) bool
 func (o Option[T]) MapOrElse(supplier func() T, mapper func(T) T) T
+func (o Option[T]) MapOrElseAny(supplier func() any, mapper func(T) any) any
 func (o Option[T]) MapOrElseString(supplier func() string, mapper func(T) string) string
 func (o Option[T]) MapOrElseInt(supplier func() int, mapper func(T) int) int
 func (o Option[T]) MapOrElseBool(supplier func() bool, mapper func(T) bool) bool

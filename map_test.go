@@ -24,6 +24,22 @@ func TestMap(t *testing.T) {
 		})
 	})
 
+	t.Run("MapToAny", func(t *testing.T) {
+		t.Run("when value is present", func(t *testing.T) {
+			opt := Some(42)
+			assert.Equal(t, true, opt.MapToAny(func(i int) any {
+				return i > 0
+			}).Unwrap())
+		})
+
+		t.Run("when value is not present", func(t *testing.T) {
+			opt := None[int]()
+			assert.True(t, opt.MapToAny(func(i int) any {
+				return i > 0
+			}).IsNone())
+		})
+	})
+
 	t.Run("MapToString", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
 			opt := Some(42)
@@ -62,6 +78,32 @@ func TestMap(t *testing.T) {
 			expected := 100
 
 			result := input.MapOr(defaultValue, mapper)
+			assert.Equal(t, expected, result)
+		})
+	})
+
+	t.Run("MapOrAny", func(t *testing.T) {
+		t.Run("MapOrAny on a Some Option returns the mapped value", func(t *testing.T) {
+			input := Some(5)
+			defaultValue := 100
+			mapper := func(x int) any {
+				return x * 2
+			}
+			expected := 10
+
+			result := input.MapOrAny(defaultValue, mapper)
+			assert.Equal(t, expected, result)
+		})
+
+		t.Run("MapOrAny on a None Option returns the default value", func(t *testing.T) {
+			input := None[int]()
+			defaultValue := 100
+			mapper := func(x int) any {
+				return x * 2
+			}
+			expected := 100
+
+			result := input.MapOrAny(defaultValue, mapper)
 			assert.Equal(t, expected, result)
 		})
 	})
