@@ -193,6 +193,25 @@ func TestOption(t *testing.T) {
 		})
 	})
 
+	t.Run("Consume", func(t *testing.T) {
+		t.Run("when value is present", func(t *testing.T) {
+			opt := Some(42)
+			var result int
+			opt.Consume(func(i int) {
+				result = i
+			})
+			assert.Equal(t, 42, result)
+		})
+
+		t.Run("when value is not present", func(t *testing.T) {
+			opt := None[int]()
+			var result int
+			opt.Consume(func(i int) {
+				result = i
+			})
+			assert.Zero(t, result)
+		})
+	})
 	t.Run("UnwrapOrElse", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
 			opt := Some(42)

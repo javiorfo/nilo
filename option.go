@@ -175,6 +175,20 @@ func (o Option[T]) InspectOrElse(consumer func(T), or func()) {
 	}
 }
 
+// Consume calls a function on the contained value if the `Option` is `Some`,
+// and returns nothing.
+//
+// This is often used for side effects, such as updating state,
+// without needing to manually check the presence of the value.
+//
+// Parameters:
+//   - consumer: A function that takes the `Option`'s value.
+func (o Option[T]) Consume(consumer func(T)) {
+	if o.IsSome() {
+		consumer(o.Unwrap())
+	}
+}
+
 // None returns an empty Option.
 func None[T any]() Option[T] {
 	return Option[T]{}

@@ -27,12 +27,16 @@ func main() {
 		return u
 	}))
 
-	nilo.FromResult(getUser(true)).OkAndResult(getUser2).Inspect(print)
+	nilo.FromResult(getUser(true)).
+		OkAndResult(getUser2).
+		Consume(print)
 
 	_, err := test(false).OkOr(errors.New("some err"))
 	fmt.Println("Error:", err.Error())
 
-	fmt.Println(test(true).MapToString(func(v string) string { return v + ", World" }).UnwrapOr("another string"))
+	fmt.Println(test(true).
+		MapToString(func(v string) string { return v + ", World" }).
+		UnwrapOr("another string"))
 }
 
 func test(b bool) nilo.Option[string] {

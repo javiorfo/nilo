@@ -41,12 +41,16 @@ func main() {
 	  return u
   }))
 
-  nilo.FromResult(getUser(true)).OkAndResult(getUser2).Inspect(print)
+  nilo.FromResult(getUser(true)).
+    OkAndResult(getUser2).
+    Consume(print)
 
-  _, err := test(false).OkOr(errors.New("some err"))
+  _, err := test(false).OkOrElse(func() error { return errors.New("some err") })
   fmt.Println("Error:", err.Error())
 
-  fmt.Println(test(true).MapToString(func(v string) string { return v + ", World" }).UnwrapOr("another string"))
+  fmt.Println(test(true).
+    MapToString(func(v string) string { return v + ", World" }).
+    UnwrapOr("another string"))
 }
 
 func test(b bool) nilo.Option[string] {
@@ -162,6 +166,7 @@ func (o Option[T]) IsNone() bool
 func (o Option[T]) IsSome() bool
 func (o Option[T]) Inspect(consumer func(T)) Option[T]
 func (o Option[T]) InspectOrElse(consumer func(T), or func())
+func (o Option[T]) Consume(consumer func(T))
 func None[T any]() Option[T]
 func Some[T any](value T) Option[T]
 func SomePtr[T any](value *T) Option[T]
