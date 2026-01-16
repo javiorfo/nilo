@@ -16,7 +16,7 @@ func main() {
 	var unmarshalUser User
 	user := User{
 		Name: "Name",
-		Code: nilo.None[string](),
+		Code: nilo.Nil[string](),
 	}
 
 	// Marshal
@@ -36,12 +36,12 @@ func main() {
 	}
 
 	fmt.Printf("Unmarshaled User: %+v\n", unmarshalUser)
-	if unmarshalUser.Code.IsNone() {
-		fmt.Printf("Code is None: %s\n", unmarshalUser.Code)
+	if unmarshalUser.Code.IsNil() {
+		fmt.Printf("Code is Nil: %s\n", unmarshalUser.Code)
 	}
 
 	// Put Some in Code
-	user.Code.Replace("some code")
+	user.Code.Insert("some code")
 
 	// Marshal
 	jsonData, err = json.MarshalIndent(user, "", "  ")
@@ -60,7 +60,7 @@ func main() {
 	}
 
 	fmt.Printf("Unmarshaled User: %+v\n", unmarshalUser)
-	if unmarshalUser.Code.IsSome() {
-		fmt.Printf("Code is Some with value: %s\n", unmarshalUser.Code.Unwrap())
+	if unmarshalUser.Code.IsValue() {
+		fmt.Printf("Code is Value: %s\n", unmarshalUser.Code.OrPanic("should not be nil"))
 	}
 }

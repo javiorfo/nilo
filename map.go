@@ -1,248 +1,89 @@
 package nilo
 
-// Map applies a function to the contained value of an Option if it is `Some`
+// Map applies a function to the contained value of an Option if it is `Value`
 // and returns a new `Option` containing the mapped value.
 //
-// If the original `Option` is `None`, this method returns `None`.
+// If the original `Option` is `Nil`, this method returns `Nil`.
 //
 // Parameters:
 //   - mapper: The function to apply to the `Option`'s value. It takes a value
 //     of type `T` and returns a value of the same type `T`.
 //
 // Returns:
-//   - A new `Option[T]` containing the result of the mapping, or `None` if the
-//     original `Option` was `None`.
+//   - A new `Option[T]` containing the result of the mapping, or `Nil` if the
+//     original `Option` was `Nil`.
 func (o Option[T]) Map(mapper func(T) T) Option[T] {
-	if o.IsSome() {
-		return Some(mapper(o.Unwrap()))
+	if o.IsValue() {
+		return Value(mapper(o.AsValue()))
 	}
-	return None[T]()
+	return Nil[T]()
 }
 
-// MapToAny maps the contained value of an `Option[T]` to an any if it is `Some`,
-// and returns a new `Option[any]` with the result.
-//
-// If the original `Option` is `None`, this method returns `None[any]`.
-//
-// Parameters:
-//   - mapper: The function to apply to the `Option`'s value. It takes a value
-//     of type `T` and returns an `any`.
-//
-// Returns:
-//   - A new `Option[any]` containing the mapped value, or `None[any]`
-//     if the original `Option` was `None`.
-func (o Option[T]) MapToAny(mapper func(T) any) Option[any] {
-	if o.IsSome() {
-		return Some(mapper(o.Unwrap()))
-	}
-	return None[any]()
-}
-
-// MapToString maps the contained value of an `Option[T]` to a string if it is `Some`,
+// MapToString maps the contained value of an `Option[T]` to a string if it is `Value`,
 // and returns a new `Option[string]` with the result.
 //
-// If the original `Option` is `None`, this method returns `None[string]`.
+// If the original `Option` is `Nil`, this method returns `Nil string`.
 //
 // Parameters:
 //   - mapper: The function to apply to the `Option`'s value. It takes a value
 //     of type `T` and returns a `string`.
 //
 // Returns:
-//   - A new `Option[string]` containing the mapped value, or `None[string]`
-//     if the original `Option` was `None`.
+//   - A new `Option[string]` containing the mapped value, or `Nil string`
+//     if the original `Option` was `Nil`.
 func (o Option[T]) MapToString(mapper func(T) string) Option[string] {
-	if o.IsSome() {
-		return Some(mapper(o.Unwrap()))
+	if o.IsValue() {
+		return Value(mapper(o.AsValue()))
 	}
-	return None[string]()
+	return Nil[string]()
 }
 
-// MapToInt maps the contained value of an `Option[T]` to an integer if it is `Some`,
+// MapToInt maps the contained value of an `Option[T]` to an integer if it is `Value`,
 // and returns a new `Option[int]` with the result.
 //
-// If the original `Option` is `None`, this method returns `None[int]`.
+// If the original `Option` is `Nil`, this method returns `Nil int`.
 //
 // Parameters:
 //   - mapper: The function to apply to the `Option`'s value. It takes a value
 //     of type `T` and returns an `int`.
 //
 // Returns:
-//   - A new `Option[int]` containing the mapped value, or `None[int]`
-//     if the original `Option` was `None`.
+//   - A new `Option[int]` containing the mapped value, or `Nil int`
+//     if the original `Option` was `Nil`.
 func (o Option[T]) MapToInt(mapper func(T) int) Option[int] {
-	if o.IsSome() {
-		return Some(mapper(o.Unwrap()))
+	if o.IsValue() {
+		return Value(mapper(o.AsValue()))
 	}
-	return None[int]()
+	return Nil[int]()
 }
 
-// MapToBool maps the contained value of an `Option[T]` to a boolean if it is `Some`,
+// MapToBool maps the contained value of an `Option[T]` to a boolean if it is `Value`,
 // and returns a new `Option[bool]` with the result.
 //
-// If the original `Option` is `None`, this method returns `None[bool]`.
+// If the original `Option` is `Nil`, this method returns `Nil bool`.
 //
 // Parameters:
 //   - mapper: The function to apply to the `Option`'s value. It takes a value
 //     of type `T` and returns a `bool`.
 //
 // Returns:
-//   - A new `Option[bool]` containing the mapped value, or `None[bool]`
-//     if the original `Option` was `None`.
+//   - A new `Option[bool]` containing the mapped value, or `Nil bool`
+//     if the original `Option` was `Nil`.
 func (o Option[T]) MapToBool(mapper func(T) bool) Option[bool] {
-	if o.IsSome() {
-		return Some(mapper(o.Unwrap()))
+	if o.IsValue() {
+		return Value(mapper(o.AsValue()))
 	}
-	return None[bool]()
+	return Nil[bool]()
 }
 
-// MapOr maps the `Option`'s value if it is `Some` and returns the result,
-// otherwise returns a default value.
+// MapOrDefault maps the `Option`'s value if it is `Value`, otherwise returns
+// the zero value of the type or the implemented in Default interface.
 //
 // Parameters:
-//   - def: The default value to return if the `Option` is `None`.
-//   - mapper: A function to apply to the `Option`'s value if it is `Some`.
-func (o Option[T]) MapOr(def T, mapper func(T) T) T {
-	if o.IsSome() {
-		return mapper(o.Unwrap())
-	}
-	return def
-}
-
-// MapOrAny maps the `Option`'s value to a string if it is `Some` and
-// returns the result, otherwise returns a default any.
-//
-// Parameters:
-//   - def: The default any to return if the `Option` is `None`.
-//   - mapper: A function to apply to the `Option`'s value to produce an any.
-func (o Option[T]) MapOrAny(def any, mapper func(T) any) any {
-	if o.IsSome() {
-		return mapper(o.Unwrap())
-	}
-	return def
-}
-
-// MapOrString maps the `Option`'s value to a string if it is `Some` and
-// returns the result, otherwise returns a default string.
-//
-// Parameters:
-//   - def: The default string to return if the `Option` is `None`.
-//   - mapper: A function to apply to the `Option`'s value to produce a string.
-func (o Option[T]) MapOrString(def string, mapper func(T) string) string {
-	if o.IsSome() {
-		return mapper(o.Unwrap())
-	}
-	return def
-}
-
-// MapOrInt maps the `Option`'s value to an integer if it is `Some` and
-// returns the result, otherwise returns a default integer.
-//
-// Parameters:
-//   - def: The default integer to return if the `Option` is `None`.
-//   - mapper: A function to apply to the `Option`'s value to produce an integer.
-func (o Option[T]) MapOrInt(def int, mapper func(T) int) int {
-	if o.IsSome() {
-		return mapper(o.Unwrap())
-	}
-	return def
-}
-
-// MapOrBool maps the `Option`'s value to a boolean if it is `Some` and
-// returns the result, otherwise returns a default boolean.
-//
-// Parameters:
-//   - def: The default boolean to return if the `Option` is `None`.
-//   - mapper: A function to apply to the `Option`'s value to produce a boolean.
-func (o Option[T]) MapOrBool(def bool, mapper func(T) bool) bool {
-	if o.IsSome() {
-		return mapper(o.Unwrap())
-	}
-	return def
-}
-
-// MapOrElse maps the `Option`'s value if it is `Some` and returns the result,
-// otherwise calls a supplier function to get the default value.
-//
-// Parameters:
-//
-//	  the function signature).
-//	- supplier: A function that provides the default value if the `Option` is `None`.
-//	- mapper: A function to apply to the `Option`'s value if it is `Some`.
-func (o Option[T]) MapOrElse(supplier func() T, mapper func(T) T) T {
-	if o.IsSome() {
-		return mapper(o.Unwrap())
-	}
-	return supplier()
-}
-
-// MapOrElseAny maps the `Option`'s value to an any if it is `Some`,
-// otherwise calls a supplier function to get the default any.
-//
-// Parameters:
-//
-//	  the function signature).
-//	- supplier: A function that provides the default any if the `Option` is `None`.
-//	- mapper: A function to apply to the `Option`'s value to produce an any.
-func (o Option[T]) MapOrElseAny(supplier func() any, mapper func(T) any) any {
-	if o.IsSome() {
-		return mapper(o.Unwrap())
-	}
-	return supplier()
-}
-
-// MapOrElseString maps the `Option`'s value to a string if it is `Some`,
-// otherwise calls a supplier function to get the default string.
-//
-// Parameters:
-//
-//	  the function signature).
-//	- supplier: A function that provides the default string if the `Option` is `None`.
-//	- mapper: A function to apply to the `Option`'s value to produce a string.
-func (o Option[T]) MapOrElseString(supplier func() string, mapper func(T) string) string {
-	if o.IsSome() {
-		return mapper(o.Unwrap())
-	}
-	return supplier()
-}
-
-// MapOrElseInt maps the `Option`'s value to an integer if it is `Some`,
-// otherwise calls a supplier function to get the default integer.
-//
-// Parameters:
-//
-//	  the function signature).
-//	- supplier: A function that provides the default integer if the `Option` is `None`.
-//	- mapper: A function to apply to the `Option`'s value to produce an integer.
-func (o Option[T]) MapOrElseInt(supplier func() int, mapper func(T) int) int {
-	if o.IsSome() {
-		return mapper(o.Unwrap())
-	}
-	return supplier()
-}
-
-// MapOrElseBool maps the `Option`'s value to a boolean if it is `Some`,
-// otherwise calls a supplier function to get the default boolean.
-//
-// Parameters:
-//
-//	  the function signature).
-//	- supplier: A function that provides the default boolean if the `Option` is `None`.
-//	- mapper: A function to apply to the `Option`'s value to produce a boolean.
-func (o Option[T]) MapOrElseBool(supplier func() bool, mapper func(T) bool) bool {
-	if o.IsSome() {
-		return mapper(o.Unwrap())
-	}
-	return supplier()
-}
-
-// MapOrDefault maps the `Option`'s value if it is `Some`, otherwise returns
-// the zero value of the type.
-//
-// Parameters:
-//   - mapper: A function to apply to the `Option`'s value if it is `Some`.
+//   - mapper: A function to apply to the `Option`'s value if it is `Value`.
 func (o Option[T]) MapOrDefault(mapper func(T) T) T {
-	if o.IsSome() {
-		return mapper(o.Unwrap())
+	if o.IsValue() {
+		return mapper(o.AsValue())
 	}
 
 	return defaultImplOrNew[T]()

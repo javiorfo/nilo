@@ -16,142 +16,110 @@ func (t testStruct) Default() testStruct {
 }
 
 func TestOption(t *testing.T) {
-	t.Run("Unwrap", func(t *testing.T) {
+	t.Run("AsValue", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := Some(42)
-			assert.Equal(t, 42, opt.Unwrap())
+			opt := Value(42)
+			assert.Equal(t, 42, opt.AsValue())
 		})
 
 		t.Run("when value is not present", func(t *testing.T) {
-			opt := None[int]()
+			opt := Nil[int]()
 			assert.Panics(t, func() {
-				opt.Unwrap()
+				opt.AsValue()
 			})
 		})
 	})
 
-	t.Run("UnwrapOr", func(t *testing.T) {
+	t.Run("Or", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := Some(42)
-			assert.Equal(t, 42, opt.UnwrapOr(24))
+			opt := Value(42)
+			assert.Equal(t, 42, opt.Or(24))
 		})
 
 		t.Run("when value is not present", func(t *testing.T) {
-			opt := None[int]()
-			assert.Equal(t, 24, opt.UnwrapOr(24))
+			opt := Nil[int]()
+			assert.Equal(t, 24, opt.Or(24))
 		})
 	})
 
-	t.Run("UnwrapOrDefault", func(t *testing.T) {
+	t.Run("OrDefault", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := Some(testStruct{"ok"})
-			assert.Equal(t, "ok", opt.UnwrapOrDefault().Property)
+			opt := Value(testStruct{"ok"})
+			assert.Equal(t, "ok", opt.OrDefault().Property)
 		})
 
 		t.Run("when value is not present", func(t *testing.T) {
-			opt := None[testStruct]()
-			assert.Equal(t, "Default", opt.UnwrapOrDefault().Property)
+			opt := Nil[testStruct]()
+			assert.Equal(t, "Default", opt.OrDefault().Property)
 		})
 	})
 
-	t.Run("OkOr", func(t *testing.T) {
+	t.Run("OrError", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := Some(42)
-			value, err := opt.OkOr(errors.New("error"))
+			opt := Value(42)
+			value, err := opt.OrError(func() error { return errors.New("error") })
 			assert.Equal(t, 42, *value)
 			assert.NoError(t, err)
 		})
 
 		t.Run("when value is not present", func(t *testing.T) {
-			opt := None[int]()
-			value, err := opt.OkOr(errors.New("error"))
+			opt := Nil[int]()
+			value, err := opt.OrError(func() error { return errors.New("error") })
 			assert.Error(t, err)
 			assert.Nil(t, value)
-		})
-	})
-
-	t.Run("OkOrElse", func(t *testing.T) {
-		t.Run("when value is present", func(t *testing.T) {
-			opt := Some(42)
-			value, err := opt.OkOrElse(func() error { return errors.New("error") })
-			assert.Equal(t, 42, *value)
-			assert.NoError(t, err)
-		})
-
-		t.Run("when value is not present", func(t *testing.T) {
-			opt := None[int]()
-			value, err := opt.OkOrElse(func() error { return errors.New("error") })
-			assert.Error(t, err)
-			assert.Nil(t, value)
-		})
-	})
-
-	t.Run("OrElse", func(t *testing.T) {
-		t.Run("when value is present", func(t *testing.T) {
-			opt := Some(42)
-			assert.Equal(t, 42, opt.OrElse(func() Option[int] {
-				return Some(24)
-			}).Unwrap())
-		})
-
-		t.Run("when value is not present", func(t *testing.T) {
-			opt := None[int]()
-			assert.Equal(t, 24, opt.OrElse(func() Option[int] {
-				return Some(24)
-			}).Unwrap())
 		})
 	})
 
 	t.Run("Filter", func(t *testing.T) {
 		t.Run("when value satisfies the filter", func(t *testing.T) {
-			opt := Some(42)
+			opt := Value(42)
 			assert.Equal(t, 42, opt.Filter(func(i int) bool {
 				return i > 0
-			}).Unwrap())
+			}).AsValue())
 		})
 
 		t.Run("when value does not satisfy the filter", func(t *testing.T) {
-			opt := Some(42)
+			opt := Value(42)
 			assert.True(t, opt.Filter(func(i int) bool {
 				return i < 0
-			}).IsNone())
+			}).IsNil())
 		})
 
 		t.Run("when value is not present", func(t *testing.T) {
-			opt := None[int]()
+			opt := Nil[int]()
 			assert.True(t, opt.Filter(func(i int) bool {
 				return i > 0
-			}).IsNone())
+			}).IsNil())
 		})
 	})
 
-	t.Run("IsNone", func(t *testing.T) {
+	t.Run("IsNil", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := Some(42)
-			assert.False(t, opt.IsNone())
+			opt := Value(42)
+			assert.False(t, opt.IsNil())
 		})
 
 		t.Run("when value is not present", func(t *testing.T) {
-			opt := None[int]()
-			assert.True(t, opt.IsNone())
+			opt := Nil[int]()
+			assert.True(t, opt.IsNil())
 		})
 	})
 
-	t.Run("IsSome", func(t *testing.T) {
+	t.Run("IsValue", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := Some(42)
-			assert.True(t, opt.IsSome())
+			opt := Value(42)
+			assert.True(t, opt.IsValue())
 		})
 
 		t.Run("when value is not present", func(t *testing.T) {
-			opt := None[int]()
-			assert.False(t, opt.IsSome())
+			opt := Nil[int]()
+			assert.False(t, opt.IsValue())
 		})
 	})
 
 	t.Run("Inspect", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := Some(42)
+			opt := Value(42)
 			var result int
 			opt.Inspect(func(i int) {
 				result = i
@@ -160,42 +128,18 @@ func TestOption(t *testing.T) {
 		})
 
 		t.Run("when value is not present", func(t *testing.T) {
-			opt := None[int]()
+			opt := Nil[int]()
 			var result int
 			opt.Inspect(func(i int) {
 				result = i
 			})
 			assert.Zero(t, result)
-		})
-	})
-
-	t.Run("InspectOrElse", func(t *testing.T) {
-		t.Run("when value is present", func(t *testing.T) {
-			opt := Some(42)
-			var result int
-			opt.InspectOrElse(func(i int) {
-				result = i
-			}, func() {
-				result = 24
-			})
-			assert.Equal(t, 42, result)
-		})
-
-		t.Run("when value is not present", func(t *testing.T) {
-			opt := None[int]()
-			var result int
-			opt.InspectOrElse(func(i int) {
-				result = i
-			}, func() {
-				result = 24
-			})
-			assert.Equal(t, 24, result)
 		})
 	})
 
 	t.Run("Consume", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := Some(42)
+			opt := Value(42)
 			var result int
 			opt.Consume(func(i int) {
 				result = i
@@ -204,7 +148,7 @@ func TestOption(t *testing.T) {
 		})
 
 		t.Run("when value is not present", func(t *testing.T) {
-			opt := None[int]()
+			opt := Nil[int]()
 			var result int
 			opt.Consume(func(i int) {
 				result = i
@@ -212,438 +156,219 @@ func TestOption(t *testing.T) {
 			assert.Zero(t, result)
 		})
 	})
-	t.Run("UnwrapOrElse", func(t *testing.T) {
+
+	t.Run("OrElse", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
-			opt := Some(42)
-			assert.Equal(t, 42, opt.UnwrapOrElse(func() int {
+			opt := Value(42)
+			assert.Equal(t, 42, opt.OrElse(func() int {
 				return 24
 			}))
 		})
 
 		t.Run("when value is not present", func(t *testing.T) {
-			opt := None[int]()
-			assert.Equal(t, 24, opt.UnwrapOrElse(func() int {
+			opt := Nil[int]()
+			assert.Equal(t, 24, opt.OrElse(func() int {
 				return 24
 			}))
 		})
 	})
 
-	t.Run("None", func(t *testing.T) {
-		opt := None[int]()
-		assert.True(t, opt.IsNone())
+	t.Run("Nil", func(t *testing.T) {
+		opt := Nil[int]()
+		assert.True(t, opt.IsNil())
 	})
 
-	t.Run("Some", func(t *testing.T) {
-		opt := Some(42)
-		assert.Equal(t, 42, opt.Unwrap())
+	t.Run("Value", func(t *testing.T) {
+		opt := Value(42)
+		assert.Equal(t, 42, opt.AsValue())
 	})
 
-	t.Run("SomePtr", func(t *testing.T) {
+	t.Run("Nilable", func(t *testing.T) {
 		t.Run("when value is not nil", func(t *testing.T) {
 			value := 42
-			opt := SomePtr(&value)
-			assert.Equal(t, 42, opt.Unwrap())
+			opt := Ptr(&value)
+			assert.Equal(t, 42, opt.AsValue())
 		})
 
 		t.Run("when value is nil", func(t *testing.T) {
 			var value *int
-			opt := SomePtr(value)
-			assert.True(t, opt.IsNone())
+			opt := Ptr(value)
+			assert.True(t, opt.IsNil())
 		})
 	})
 
 	t.Run("AndThen", func(t *testing.T) {
-		t.Run("AndThen on Some Option", func(t *testing.T) {
-			input := Some(5)
+		t.Run("AndThen on Value Option", func(t *testing.T) {
+			input := Value(5)
 			mapper := func(x int) Option[int] {
-				return Some(x * 2)
+				return Value(x * 2)
 			}
-			expected := Some(10)
+			expected := Value(10)
 
 			result := input.AndThen(mapper)
 
-			assert.True(t, result.IsSome())
-			assert.Equal(t, expected.Unwrap(), result.Unwrap())
+			assert.True(t, result.IsValue())
+			assert.Equal(t, expected.AsValue(), result.AsValue())
 		})
 
-		t.Run("AndThen on None Option", func(t *testing.T) {
-			input := None[int]()
+		t.Run("AndThen on Nil Option", func(t *testing.T) {
+			input := Nil[int]()
 			mapper := func(x int) Option[int] {
-				return Some(x * 2)
+				return Value(x * 2)
 			}
 
 			result := input.AndThen(mapper)
-			assert.True(t, result.IsNone())
+			assert.True(t, result.IsNil())
 		})
 	})
 
-	t.Run("And", func(t *testing.T) {
-		t.Run("And with two Some Options", func(t *testing.T) {
-			a := Some(10)
-			b := Some(20)
-			expected := Some(20)
-
-			result := a.And(b)
-			assert.True(t, result.IsSome())
-			assert.Equal(t, expected.Unwrap(), result.Unwrap())
-		})
-
-		t.Run("And with a Some and a None", func(t *testing.T) {
-			a := Some(10)
-			b := None[int]()
-
-			result := a.And(b)
-			assert.True(t, result.IsNone())
-		})
-
-		t.Run("And with a None and a Some", func(t *testing.T) {
-			a := None[int]()
-			b := Some(20)
-
-			result := a.And(b)
-			assert.True(t, result.IsNone())
-		})
-
-		t.Run("And with two None Options", func(t *testing.T) {
-			a := None[int]()
-			b := None[int]()
-
-			result := a.And(b)
-			assert.True(t, result.IsNone())
-		})
-	})
-
-	t.Run("Or", func(t *testing.T) {
-		t.Run("Or with two Some Options", func(t *testing.T) {
-			a := Some(10)
-			b := Some(20)
-
-			result := a.Or(b)
-
-			assert.True(t, result.IsSome())
-			assert.Equal(t, 10, result.Unwrap())
-		})
-
-		t.Run("Or with a Some and a None", func(t *testing.T) {
-			a := Some(10)
-			b := None[int]()
-
-			result := a.Or(b)
-
-			assert.True(t, result.IsSome())
-			assert.Equal(t, 10, result.Unwrap())
-		})
-
-		t.Run("Or with a None and a Some", func(t *testing.T) {
-			a := None[int]()
-			b := Some(20)
-
-			result := a.Or(b)
-
-			assert.True(t, result.IsSome())
-			assert.Equal(t, 20, result.Unwrap())
-		})
-
-		t.Run("Or with two None Options", func(t *testing.T) {
-			a := None[int]()
-			b := None[int]()
-
-			result := a.Or(b)
-
-			assert.True(t, result.IsNone())
-		})
-	})
-
-	t.Run("Xor", func(t *testing.T) {
-		t.Run("Xor with two Some Options returns None", func(t *testing.T) {
-			a := Some(10)
-			b := Some(20)
-
-			result := a.Xor(b)
-
-			assert.True(t, result.IsNone())
-		})
-
-		t.Run("Xor with Some and None returns Some", func(t *testing.T) {
-			a := Some(10)
-			b := None[int]()
-
-			result := a.Xor(b)
-
-			assert.True(t, result.IsSome())
-			assert.Equal(t, 10, result.Unwrap())
-		})
-
-		t.Run("Xor with None and Some returns Some", func(t *testing.T) {
-			a := None[int]()
-			b := Some(20)
-
-			result := a.Xor(b)
-
-			assert.True(t, result.IsSome())
-			assert.Equal(t, 20, result.Unwrap())
-		})
-
-		t.Run("Xor with two None Options returns None", func(t *testing.T) {
-			a := None[int]()
-			b := None[int]()
-
-			result := a.Xor(b)
-
-			assert.True(t, result.IsNone())
-		})
-	})
-
-	t.Run("IsSomeAnd", func(t *testing.T) {
-		t.Run("IsSomeAnd returns true for Some and a true predicate", func(t *testing.T) {
-			input := Some(10)
+	t.Run("IsValueAnd", func(t *testing.T) {
+		t.Run("returns true for Value and a true predicate", func(t *testing.T) {
+			input := Value(10)
 			predicate := func(x int) bool { return x > 5 }
 
-			result := input.IsSomeAnd(predicate)
+			result := input.IsValueAnd(predicate)
 			assert.True(t, result)
 		})
 
-		t.Run("IsSomeAnd returns false for Some and a false predicate", func(t *testing.T) {
-			input := Some(3)
+		t.Run("returns false for Value and a false predicate", func(t *testing.T) {
+			input := Value(3)
 			predicate := func(x int) bool { return x > 5 }
 
-			result := input.IsSomeAnd(predicate)
+			result := input.IsValueAnd(predicate)
 			assert.False(t, result)
 		})
 
-		t.Run("IsSomeAnd returns false for None", func(t *testing.T) {
-			input := None[int]()
+		t.Run("returns false for Nil", func(t *testing.T) {
+			input := Nil[int]()
 			predicate := func(x int) bool {
 				return x > 5
 			}
 
-			result := input.IsSomeAnd(predicate)
+			result := input.IsValueAnd(predicate)
 			assert.False(t, result)
 		})
 	})
 
-	t.Run("IsNoneOr", func(t *testing.T) {
-		t.Run("IsNoneOr returns true for None", func(t *testing.T) {
-			input := None[int]()
+	t.Run("IsNilOr", func(t *testing.T) {
+		t.Run("returns true for Nil", func(t *testing.T) {
+			input := Nil[int]()
 			predicate := func(x int) bool {
 				return x > 5
 			}
 
-			result := input.IsNoneOr(predicate)
+			result := input.IsNilOr(predicate)
 			assert.True(t, result)
 		})
 
-		t.Run("IsNoneOr returns true for Some and a true predicate", func(t *testing.T) {
-			input := Some(10)
+		t.Run("returns true for Value and a true predicate", func(t *testing.T) {
+			input := Value(10)
 			predicate := func(x int) bool { return x > 5 }
 
-			result := input.IsNoneOr(predicate)
+			result := input.IsNilOr(predicate)
 			assert.True(t, result)
 		})
 
-		t.Run("IsNoneOr returns false for Some and a false predicate", func(t *testing.T) {
-			input := Some(3)
+		t.Run("returns false for Value and a false predicate", func(t *testing.T) {
+			input := Value(3)
 			predicate := func(x int) bool { return x > 5 }
 
-			result := input.IsNoneOr(predicate)
+			result := input.IsNilOr(predicate)
 			assert.False(t, result)
 		})
 	})
 
 	t.Run("Take", func(t *testing.T) {
-		t.Run("Take on Some Option returns a Some and leaves a None", func(t *testing.T) {
-			input := Some(10)
-			expectedOld := Some(10)
+		t.Run("Take on Value Option returns a Value and leaves a Nil", func(t *testing.T) {
+			input := Value(10)
+			expectedOld := Value(10)
 
 			result := input.Take()
-			assert.True(t, result.IsSome())
-			assert.Equal(t, expectedOld.Unwrap(), result.Unwrap())
-			assert.True(t, input.IsNone(), "The original option should be None after Take")
+			assert.True(t, result.IsValue())
+			assert.Equal(t, expectedOld.AsValue(), result.AsValue())
+			assert.True(t, input.IsNil(), "The original option should be Nil after Take")
 		})
 
-		t.Run("Take on None Option returns a None and remains None", func(t *testing.T) {
-			input := None[int]()
+		t.Run("Take on Nil Option returns a Nil and remains Nil", func(t *testing.T) {
+			input := Nil[int]()
 
 			result := input.Take()
-			assert.True(t, result.IsNone())
-			assert.True(t, input.IsNone(), "The original option should remain None after Take")
+			assert.True(t, result.IsNil())
+			assert.True(t, input.IsNil(), "The original option should remain Nil after Take")
 		})
 	})
 
 	t.Run("TakeIf", func(t *testing.T) {
-		t.Run("TakeIf on a Some Option with a true predicate", func(t *testing.T) {
-			input := Some(10)
+		t.Run("TakeIf on a Value Option with a true predicate", func(t *testing.T) {
+			input := Value(10)
 			predicate := func(x int) bool { return x > 5 }
 
 			result := input.TakeIf(predicate)
-			assert.True(t, result.IsSome())
-			assert.Equal(t, 10, result.Unwrap())
-			assert.True(t, input.IsNone(), "The original option should be None")
+			assert.True(t, result.IsValue())
+			assert.Equal(t, 10, result.AsValue())
+			assert.True(t, input.IsNil(), "The original option should be Nil")
 		})
 
-		t.Run("TakeIf on a Some Option with a false predicate", func(t *testing.T) {
-			input := Some(3)
+		t.Run("TakeIf on a Value Option with a false predicate", func(t *testing.T) {
+			input := Value(3)
 			predicate := func(x int) bool { return x > 5 }
 
 			result := input.TakeIf(predicate)
-			assert.True(t, result.IsNone())
-			assert.True(t, input.IsSome(), "The original option should remain Some")
+			assert.True(t, result.IsNil())
+			assert.True(t, input.IsValue(), "The original option should remain Value")
 		})
 
-		t.Run("TakeIf on a None Option", func(t *testing.T) {
-			input := None[int]()
+		t.Run("TakeIf on a Nil Option", func(t *testing.T) {
+			input := Nil[int]()
 			predicate := func(x int) bool {
 				return x > 5
 			}
 
 			result := input.TakeIf(predicate)
-			assert.True(t, result.IsNone())
-			assert.True(t, input.IsNone(), "The original option should remain None")
+			assert.True(t, result.IsNil())
+			assert.True(t, input.IsNil(), "The original option should remain Nil")
 		})
 	})
 
-	t.Run("Replace", func(t *testing.T) {
-		t.Run("Replace on Some Option", func(t *testing.T) {
-			input := Some(10)
-			newValue := 20
-
-			opt := input.Replace(newValue)
-			assert.True(t, opt.IsSome(), "The returned option should be Some")
-			assert.Equal(t, 20, input.Unwrap(), "The original option should have the new value")
-		})
-
-		t.Run("Replace on None Option", func(t *testing.T) {
-			input := None[int]()
-			newValue := 20
-
-			returnedOption := input.Replace(newValue)
-			assert.True(t, returnedOption.IsSome(), "The returned option should be Some")
-			assert.Equal(t, 20, input.Unwrap(), "The original option should have the new value")
-		})
-	})
-
-	t.Run("Expect", func(t *testing.T) {
-		t.Run("Expect on Some Option returns the value", func(t *testing.T) {
-			input := Some(10)
+	t.Run("OrPanic", func(t *testing.T) {
+		t.Run("OrPanic on Value Option returns the value", func(t *testing.T) {
+			input := Value(10)
 			message := "This should not be printed"
 
-			result := input.Expect(message)
+			result := input.OrPanic(message)
 			assert.Equal(t, 10, result)
 		})
 
-		t.Run("Expect on None Option panics with the message", func(t *testing.T) {
-			input := None[int]()
+		t.Run("OrPanic on Nil Option panics with the message", func(t *testing.T) {
+			input := Nil[int]()
 			message := "Expected a value, but got nothing"
 
 			assert.PanicsWithValue(t, message, func() {
-				input.Expect(message)
+				input.OrPanic(message)
 			})
 		})
 	})
 
 	t.Run("Insert", func(t *testing.T) {
-		t.Run("Insert on a None Option", func(t *testing.T) {
-			opt := None[int]()
+		t.Run("Insert on a Nil Option", func(t *testing.T) {
+			opt := Nil[int]()
 			newValue := 42
 
 			opt.Insert(newValue)
 
-			assert.True(t, opt.IsSome(), "Option should become Some")
-			assert.Equal(t, newValue, opt.Unwrap(), "The inserted value should be correct")
+			assert.True(t, opt.IsValue(), "Option should become Value")
+			assert.Equal(t, newValue, opt.AsValue(), "The inserted value should be correct")
 		})
 
-		t.Run("Insert on a Some Option", func(t *testing.T) {
+		t.Run("Insert on a Value Option", func(t *testing.T) {
 			initialValue := 10
-			opt := Some(initialValue)
+			opt := Value(initialValue)
 			newValue := 20
 
 			opt.Insert(newValue)
 
-			assert.True(t, opt.IsSome(), "Option should remain Some")
-			assert.Equal(t, newValue, opt.Unwrap(), "The value should be updated")
-		})
-	})
-
-	t.Run("GetOrInsert", func(t *testing.T) {
-		t.Run("GetOrInsert on a Some Option returns the existing value", func(t *testing.T) {
-			initialValue := 10
-			opt := Some(initialValue)
-
-			returnedValue := opt.GetOrInsert(999)
-			assert.True(t, opt.IsSome(), "Option should remain Some")
-			assert.Equal(t, initialValue, opt.Unwrap(), "Value should not be changed")
-			assert.Equal(t, initialValue, returnedValue, "Returned value should be the original value")
-		})
-
-		t.Run("GetOrInsert on a None Option inserts and returns the new value", func(t *testing.T) {
-			opt := None[int]()
-			expectedValue := 42
-
-			returnedValue := opt.GetOrInsert(expectedValue)
-			assert.True(t, opt.IsSome(), "Option should become Some")
-			assert.Equal(t, expectedValue, opt.Unwrap(), "Value should be correctly inserted")
-			assert.Equal(t, expectedValue, returnedValue, "Returned value should be the newly inserted value")
-		})
-	})
-
-	t.Run("GetOrInsertWith", func(t *testing.T) {
-		t.Run("GetOrInsertWith on a Some Option returns the existing value", func(t *testing.T) {
-			initialValue := 10
-			opt := Some(initialValue)
-
-			returnedValue := opt.GetOrInsertWith(func() int {
-				return 999
-			})
-
-			assert.True(t, opt.IsSome(), "Option should remain Some")
-			assert.Equal(t, initialValue, opt.Unwrap(), "Value should not be changed")
-			assert.Equal(t, initialValue, returnedValue, "Returned value should be the original value")
-		})
-
-		t.Run("GetOrInsertWith on a None Option inserts and returns a new value", func(t *testing.T) {
-			opt := None[int]()
-			expectedValue := 42
-
-			returnedValue := opt.GetOrInsertWith(func() int {
-				return expectedValue
-			})
-
-			assert.True(t, opt.IsSome(), "Option should become Some")
-			assert.Equal(t, expectedValue, opt.Unwrap(), "Value should be correctly inserted")
-			assert.Equal(t, expectedValue, returnedValue, "Returned value should be the newly inserted value")
-		})
-	})
-
-	t.Run("GetOrInsertDefault", func(t *testing.T) {
-		t.Run("GetOrInsertDefault on a Some Option returns existing value", func(t *testing.T) {
-			initialValue := 10
-			opt := Some(initialValue)
-
-			returnedValue := opt.GetOrInsertDefault()
-
-			assert.True(t, opt.IsSome(), "Option should remain Some")
-			assert.Equal(t, initialValue, opt.Unwrap(), "Value should not be changed")
-			assert.Equal(t, initialValue, returnedValue, "Returned value should be the original value")
-		})
-
-		t.Run("GetOrInsertDefault on a None Option returns zero value for built-in type", func(t *testing.T) {
-			opt := None[int]()
-
-			returnedValue := opt.GetOrInsertDefault()
-
-			assert.True(t, opt.IsSome(), "Option should become Some")
-			assert.Equal(t, 0, opt.Unwrap(), "Value should be the zero value")
-			assert.Equal(t, 0, returnedValue, "Returned value should be the zero value")
-		})
-
-		t.Run("GetOrInsertDefault on a None Option returns custom default value", func(t *testing.T) {
-			opt := None[testStruct]()
-
-			returnedValue := opt.GetOrInsertDefault()
-
-			assert.True(t, opt.IsSome(), "Option should become Some")
-			assert.Equal(t, "Default", opt.Unwrap().Property, "Value should be the custom default value")
-			assert.Equal(t, "Default", returnedValue.Property, "Returned value should be the custom default value")
+			assert.True(t, opt.IsValue(), "Option should remain Value")
+			assert.Equal(t, newValue, opt.AsValue(), "The value should be updated")
 		})
 	})
 }

@@ -1,5 +1,5 @@
 # nilo
-*Rusty Go Option library for handling nil values, some errors and marshaling*
+*Go Option library for handling nil values, some errors and JSON marshaling*
 
 ## Caveats
 - This library requires Go 1.23+
@@ -31,33 +31,33 @@ func (u User) Default() User {
 }
 
 func main() {
-  var optUser = nilo.None[User]()
+  var optUser = nilo.Nil[User]()
 
-  fmt.Printf("User or default: %+v\n", optUser.UnwrapOrDefault())
-  fmt.Printf("User or: %+v\n", optUser.UnwrapOr(*new(User)))
-  fmt.Printf("User or else: %+v\n", optUser.UnwrapOrElse(func() User { return User{"else"} }))
-  fmt.Printf("Map or: %+v\n", optUser.MapOr(User{"or"}, func(u User) User {
+  fmt.Printf("User or default: %+v\n", optUser.OrDefault())
+  fmt.Printf("User or: %+v\n", optUser.Or(*new(User)))
+  fmt.Printf("User or else: %+v\n", optUser.OrElse(func() User { return User{"else"} }))
+  fmt.Printf("Map or: %+v\n", optUser.Map(func(u User) User {
 	  u.Name = "something"
 	  return u
-  }))
+  }).Or(User{"or"}))
 
   nilo.FromResult(getUser(true)).
-    OkAndResult(getUser2).
+    AndResult(getUser2).
     Consume(print)
 
-  _, err := test(false).OkOrElse(func() error { return errors.New("some err") })
+  _, err := test(false).OrError(func() error { return errors.New("some err") })
   fmt.Println("Error:", err.Error())
 
   fmt.Println(test(true).
     MapToString(func(v string) string { return v + ", World" }).
-    UnwrapOr("another string"))
+    Or("another string"))
 }
 
 func test(b bool) nilo.Option[string] {
   if b {
-	  return nilo.Some("Hello")
+	  return nilo.Value("Hello")
   }
-  return nilo.None[string]()
+  return nilo.Nil[string]()
 }
 
 func print[T any](v *T) {
@@ -101,7 +101,7 @@ func main() {
   var unmarshalUser User
   user := User{
 	  Name: "Name",
-	  Code: nilo.None[string](),
+	  Code: nilo.Nil[string](),
   }
 
   // Marshal
@@ -121,12 +121,12 @@ func main() {
   }
 	
   fmt.Printf("Unmarshaled User: %+v\n", unmarshalUser)
-  if unmarshalUser.Code.IsNone() {
-	  fmt.Printf("Code is None: %s\n", unmarshalUser.Code)
+  if unmarshalUser.Code.IsNil() {
+	  fmt.Printf("Code is Nil: %s\n", unmarshalUser.Code)
   }
 
   // Put Some in Code
-  user.Code.Replace("some code")
+  user.Code.Insert("code")
 
   // Marshal
   jsonData, err = json.MarshalIndent(user, "", "  ")
@@ -145,66 +145,45 @@ func main() {
   }
 	
   fmt.Printf("Unmarshaled User: %+v\n", unmarshalUser)
-  if unmarshalUser.Code.IsSome() {
-	  fmt.Printf("Code is Some with value: %s\n", unmarshalUser.Code.Unwrap())
+  if unmarshalUser.Code.IsValue() {
+	  fmt.Printf("Code is Value: %s\n", unmarshalUser.Code.AsValue())
   }
 }
 ```
 
 #### All methods
 ```go
-func (o Option[T]) Unwrap() T
-func (o Option[T]) UnwrapOr(other T) T
-func (o Option[T]) UnwrapUnchecked() *T
-func (o Option[T]) UnwrapOrDefault() T
-func (o Option[T]) UnwrapOrElse(supplier func() T) T
-func (o Option[T]) OkOr(err error) (*T, error)
-func (o Option[T]) OkOrElse(err func() error) (*T, error)
-func (o Option[T]) OrElse(supplier func() Option[T]) Option[T]
+func (o Option[T]) AsValue() T
+func (o Option[T]) AsPtr() *T
+func (o Option[T]) Or(other T) T
+func (o Option[T]) OrDefault() T
+func (o Option[T]) OrElse(supplier func() T) T
+func (o Option[T]) OrError(err func() error) (*T, error)
+func (o Option[T]) OrPanic(msg string) T
 func (o Option[T]) Filter(filter func(T) bool) Option[T]
-func (o Option[T]) IsNone() bool
-func (o Option[T]) IsSome() bool
+func (o Option[T]) IsNil() bool
+func (o Option[T]) IsValue() bool
+func (o Option[T]) IsValueAnd(predicate func(T) bool) bool
+func (o Option[T]) IsNilOr(predicate func(T) bool) bool
 func (o Option[T]) Inspect(consumer func(T)) Option[T]
-func (o Option[T]) InspectOrElse(consumer func(T), or func())
 func (o Option[T]) Consume(consumer func(T))
-func None[T any]() Option[T]
-func Some[T any](value T) Option[T]
-func SomePtr[T any](value *T) Option[T]
-func (o Option[T]) AndThen(fn func(T) Option[T]) Option[T]
-func (o Option[T]) And(other Option[T]) Option[T]
-func (o Option[T]) Or(other Option[T]) Option[T]
-func (o Option[T]) Xor(other Option[T]) Option[T]
-func (o Option[T]) IsSomeAnd(predicate func(T) bool) bool
-func (o Option[T]) IsNoneOr(predicate func(T) bool) bool
-func (o Option[T]) Expect(msg string) T
 func (o *Option[T]) Take() Option[T]
 func (o *Option[T]) TakeIf(predicate func(T) bool) Option[T]
-func (o *Option[T]) Replace(value T) Option[T]
 func (o *Option[T]) Insert(value T)
-func (o *Option[T]) GetOrInsert(value T) T
-func (o *Option[T]) GetOrInsertWith(supplier func() T)
-func (o *Option[T]) GetOrInsertDefault() T
 func (o Option[T]) Map(mapper func(T) T) Option[T]
-func (o Option[T]) MapToAny(mapper func(T) any) Option[any]
 func (o Option[T]) MapToString(mapper func(T) string) Option[string]
 func (o Option[T]) MapToInt(mapper func(T) int) Option[int]
 func (o Option[T]) MapToBool(mapper func(T) bool) Option[bool]
-func (o Option[T]) MapOr(def T, mapper func(T) T) T
-func (o Option[T]) MapOrAny(def any, mapper func(T) any) any
-func (o Option[T]) MapOrString(def string, mapper func(T) string) string
-func (o Option[T]) MapOrInt(def int, mapper func(T) int) int
-func (o Option[T]) MapOrBool(def bool, mapper func(T) bool) bool
-func (o Option[T]) MapOrElse(supplier func() T, mapper func(T) T) T
-func (o Option[T]) MapOrElseAny(supplier func() any, mapper func(T) any) any
-func (o Option[T]) MapOrElseString(supplier func() string, mapper func(T) string) string
-func (o Option[T]) MapOrElseInt(supplier func() int, mapper func(T) int) int
-func (o Option[T]) MapOrElseBool(supplier func() bool, mapper func(T) bool) bool
 func (o Option[T]) MapOrDefault(mapper func(T) T) T
-func (o Option[T]) OkAndResult(apply func(T) (T, error)) Option[T]
-func FromResult[T any](value T, err error) Option[T]
+func (o Option[T]) AndThen(fn func(T) Option[T]) Option[T]
+func (o Option[T]) AndResult(apply func(T) (T, error)) Option[T]
+func (o Option[T]) AndPtrResult(apply func(T) (*T, error)) Option[T]
 func (o Option[T]) MarshalJSON() ([]byte, error)
 func (o *Option[T]) UnmarshalJSON(data []byte) error
 func (o Option[T]) String() string
+func FromResult[T any](value T, err error) Option[T]
+func Nil[T any]() Option[T]
+func Value[T any](value T) Option[T]
 ```
 
 ---
