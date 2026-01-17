@@ -141,6 +141,17 @@ func (o Option[T]) Consume(consumer func(T)) {
 	}
 }
 
+// IfNil calls a function if the `Option` is `Nil`,
+// and returns nothing.
+//
+// Parameters:
+//   - executor: A function that takes the no arguments..
+func (o Option[T]) IfNil(executor func()) {
+	if o.IsNil() {
+		executor()
+	}
+}
+
 // Nil returns an empty Option.
 func Nil[T any]() Option[T] {
 	return Option[T]{}

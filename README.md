@@ -165,6 +165,7 @@ func (o Option[T]) IsNil() bool
 func (o Option[T]) IsValue() bool
 func (o Option[T]) IsValueAnd(predicate func(T) bool) bool
 func (o Option[T]) IsNilOr(predicate func(T) bool) bool
+func (o Option[T]) IfNil(executor func())
 func (o Option[T]) Inspect(consumer func(T)) Option[T]
 func (o Option[T]) Consume(consumer func(T))
 func (o *Option[T]) Take() Option[T]
@@ -184,6 +185,7 @@ func (o Option[T]) String() string
 func FromResult[T any](value T, err error) Option[T]
 func Nil[T any]() Option[T]
 func Value[T any](value T) Option[T]
+func Ptr[T any](value *T) Option[T]
 ```
 
 ---

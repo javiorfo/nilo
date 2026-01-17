@@ -117,6 +117,26 @@ func TestOption(t *testing.T) {
 		})
 	})
 
+	t.Run("IfNil", func(t *testing.T) {
+		t.Run("when value is present", func(t *testing.T) {
+			opt := Nil[int]()
+			var result int
+			opt.IfNil(func() {
+				result = 42
+			})
+			assert.Equal(t, 42, result)
+		})
+
+		t.Run("when value is not present", func(t *testing.T) {
+			opt := Value(42)
+			var result int
+			opt.IfNil(func() {
+				result = 42
+			})
+			assert.Zero(t, result)
+		})
+	})
+
 	t.Run("Inspect", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
 			opt := Value(42)
