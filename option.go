@@ -269,7 +269,7 @@ func (o *Option[T]) Insert(value T) {
 	*o = Value(value)
 }
 
-// Cast attempts to assert the interface i to type T.
+// Cast attempts to assert the value any to type T.
 // If the type assertion is successful, it returns an Option containing the value.
 // If the assertion fails (e.g., incompatible types or i is nil), it returns a Nil Option.
 //

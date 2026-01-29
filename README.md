@@ -151,7 +151,7 @@ func main() {
 }
 ```
 
-#### All methods
+#### All methods and functions
 ```go
 func (o Option[T]) AsValue() T
 func (o Option[T]) AsPtr() *T
