@@ -146,7 +146,7 @@ func main() {
 	
   fmt.Printf("Unmarshaled User: %+v\n", unmarshalUser)
   if unmarshalUser.Code.IsValue() {
-	  fmt.Printf("Code is Value: %s\n", unmarshalUser.Code.AsValue())
+	  fmt.Printf("Code is Value: %s\n", unmarshalUser.Code)
   }
 }
 ```
@@ -186,6 +186,7 @@ func FromResult[T any](value T, err error) Option[T]
 func Nil[T any]() Option[T]
 func Value[T any](value T) Option[T]
 func Ptr[T any](value *T) Option[T]
+func Cast[T any](value T) Option[T]
 ```
 
 ---

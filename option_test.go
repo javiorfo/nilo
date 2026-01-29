@@ -1,7 +1,9 @@
 package nilo
 
 import (
+	"bytes"
 	"errors"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -389,6 +391,35 @@ func TestOption(t *testing.T) {
 
 			assert.True(t, opt.IsValue(), "Option should remain Value")
 			assert.Equal(t, newValue, opt.AsValue(), "The value should be updated")
+		})
+	})
+
+	t.Run("Cast", func(t *testing.T) {
+		t.Run("Successful cast to int", func(t *testing.T) {
+			var input any = 42
+			got := Cast[int](input)
+
+			if got.IsNil() {
+				t.Fatal("Expected Some(42), got Nil")
+			}
+		})
+
+		t.Run("Failed cast (incompatible types)", func(t *testing.T) {
+			var input string = "not an int"
+			got := Cast[int](input)
+
+			if got.IsValue() {
+				t.Error("Expected Nil when casting string to int")
+			}
+		})
+
+		t.Run("Cast to interface", func(t *testing.T) {
+			var input any = bytes.NewBufferString("hello")
+			got := Cast[io.Reader](input)
+
+			if got.IsNil() {
+				t.Error("Expected Some(io.Reader), got Nil")
+			}
 		})
 	})
 }
