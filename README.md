@@ -4,7 +4,7 @@
 ## Caveats
 - This library requires Go 1.23+
 
-## Intallation
+## Installation
 ```bash
 go get -u github.com/javiorfo/nilo@latest
 ```
