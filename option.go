@@ -1,6 +1,8 @@
 // Package nilo provides a generic Option type that can be used to represent a value that may or may not be present.
 package nilo
 
+import "iter"
+
 // Option is a generic type that represents an option value.
 // An `Option` can either be `Value`, containing a value of type `T`, or `Nil`,
 // indicating the absence of a value.
@@ -119,10 +121,10 @@ func (o Option[T]) IsValue() bool {
 // This is useful for debugging or logging the value without consuming the `Option`.
 //
 // Parameters:
-//   - consumer: A function that takes the `Option`'s value.
-func (o Option[T]) Inspect(consumer func(T)) Option[T] {
+//   - inspector: A function that takes the `Option`'s value.
+func (o Option[T]) Inspect(inspector func(T)) Option[T] {
 	if o.IsValue() {
-		consumer(o.AsValue())
+		inspector(o.AsValue())
 	}
 	return o
 }
@@ -282,6 +284,16 @@ func Cast[T any](value any) Option[T] {
 		return Value(v)
 	}
 	return Nil[T]()
+}
+
+// Iter returns an iterator that yields the value held by the Option.
+// If the Option is empty, the iterator yields nothing.
+func (o Option[T]) Iter() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		if o.IsValue() {
+			yield(*o.value)
+		}
+	}
 }
 
 func defaultImplOrNew[T any]() T {

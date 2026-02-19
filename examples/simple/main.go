@@ -27,8 +27,8 @@ func main() {
 		return u
 	}).Or(User{"or"}))
 
-	nilo.FromResult(getUser(true)).
-		AndResult(getUser2).
+	nilo.Ok(getUser(true)).
+		AndOk(getUser2).
 		Consume(print)
 
 	_, err := test(false).OrError(nilo.ReturnError(errors.New("some err")))

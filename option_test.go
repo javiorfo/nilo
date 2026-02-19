@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -419,6 +420,45 @@ func TestOption(t *testing.T) {
 
 			if got.IsNil() {
 				t.Error("Expected Some(io.Reader), got Nil")
+			}
+		})
+	})
+
+	t.Run("Iter", func(t *testing.T) {
+		t.Run("yields the value once", func(t *testing.T) {
+			val := "Hello Go"
+			opt := Value(val)
+
+			got := slices.Collect(opt.Iter())
+
+			if len(got) != 1 {
+				t.Errorf("expected 1 value, got %d", len(got))
+			}
+			if got[0] != val {
+				t.Errorf("expected %q, got %q", val, got[0])
+			}
+		})
+
+		t.Run("Nil yields nothing", func(t *testing.T) {
+			opt := Nil[int]()
+
+			got := slices.Collect(opt.Iter())
+
+			if len(got) != 0 {
+				t.Errorf("expected 0 values, got %d", len(got))
+			}
+		})
+
+		t.Run("Loop", func(t *testing.T) {
+			opt := Value(100)
+			count := 0
+
+			for range opt.Iter() {
+				count++
+			}
+
+			if count != 1 {
+				t.Errorf("loop should have executed once, got %d", count)
 			}
 		})
 	})

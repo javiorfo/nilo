@@ -1,6 +1,6 @@
 package nilo
 
-// FromResult creates an `Option` from a Go function's return values.
+// Ok creates an `Option` from a Go function's return values.
 //
 // It returns a `Value` `Option` containing `value` if `err` is `nil`.
 // If `err` is not `nil`, it returns a `Nil` `Option`.
@@ -10,14 +10,14 @@ package nilo
 // Parameters:
 //   - value: The value to wrap in a `Value` `Option` if there is no error.
 //   - err: The error returned from a function.
-func FromResult[T any](value T, err error) Option[T] {
+func Ok[T any](value T, err error) Option[T] {
 	if err != nil {
 		return Nil[T]()
 	}
 	return Value(value)
 }
 
-// AndResult applies a function that returns a value and an error to the
+// AndOk applies a function that returns a value and an error to the
 // `Option`'s contained value.
 //
 // If the `Option` is `Value` and the applied function returns a `nil` error,
@@ -29,7 +29,7 @@ func FromResult[T any](value T, err error) Option[T] {
 // Parameters:
 //   - apply: A function that takes the `Option`'s value and returns a new value
 //     and an error.
-func (o Option[T]) AndResult(apply func(T) (T, error)) Option[T] {
+func (o Option[T]) AndOk(apply func(T) (T, error)) Option[T] {
 	if o.IsValue() {
 		if r, err := apply(o.AsValue()); err == nil {
 			return Value(r)
@@ -38,7 +38,7 @@ func (o Option[T]) AndResult(apply func(T) (T, error)) Option[T] {
 	return Nil[T]()
 }
 
-// AndPtrResult applies a function that returns a pointer value and an error to the
+// AndOkPtr applies a function that returns a pointer value and an error to the
 // `Option`'s contained value.
 //
 // If the `Option` is `Value` and the applied function returns a `nil` error,
@@ -50,7 +50,7 @@ func (o Option[T]) AndResult(apply func(T) (T, error)) Option[T] {
 // Parameters:
 //   - apply: A function that takes the `Option`'s value and returns a new
 //     pointer value and an error.
-func (o Option[T]) AndPtrResult(apply func(T) (*T, error)) Option[T] {
+func (o Option[T]) AndOkPtr(apply func(T) (*T, error)) Option[T] {
 	if o.IsValue() {
 		if r, err := apply(o.AsValue()); err == nil && r != nil {
 			return Value(*r)

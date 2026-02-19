@@ -166,7 +166,7 @@ func (o Option[T]) IsValue() bool
 func (o Option[T]) IsValueAnd(predicate func(T) bool) bool
 func (o Option[T]) IsNilOr(predicate func(T) bool) bool
 func (o Option[T]) IfNil(executor func())
-func (o Option[T]) Inspect(consumer func(T)) Option[T]
+func (o Option[T]) Inspect(inspector func(T)) Option[T]
 func (o Option[T]) Consume(consumer func(T))
 func (o *Option[T]) Take() Option[T]
 func (o *Option[T]) TakeIf(predicate func(T) bool) Option[T]
@@ -177,12 +177,13 @@ func (o Option[T]) MapToInt(mapper func(T) int) Option[int]
 func (o Option[T]) MapToBool(mapper func(T) bool) Option[bool]
 func (o Option[T]) MapOrDefault(mapper func(T) T) T
 func (o Option[T]) AndThen(fn func(T) Option[T]) Option[T]
-func (o Option[T]) AndResult(apply func(T) (T, error)) Option[T]
-func (o Option[T]) AndPtrResult(apply func(T) (*T, error)) Option[T]
+func (o Option[T]) AndOk(apply func(T) (T, error)) Option[T]
+func (o Option[T]) AndOkPtr(apply func(T) (*T, error)) Option[T]
 func (o Option[T]) MarshalJSON() ([]byte, error)
 func (o *Option[T]) UnmarshalJSON(data []byte) error
 func (o Option[T]) String() string
-func FromResult[T any](value T, err error) Option[T]
+func (o Option[T]) Iter() iter.Seq[T] {
+func Ok[T any](value T, err error) Option[T]
 func Nil[T any]() Option[T]
 func Value[T any](value T) Option[T]
 func Ptr[T any](value *T) Option[T]
