@@ -397,8 +397,7 @@ func TestOption(t *testing.T) {
 
 	t.Run("Cast", func(t *testing.T) {
 		t.Run("Successful cast to int", func(t *testing.T) {
-			var input any = 42
-			got := Cast[int](input)
+			got := Cast[int]("42")
 
 			if got.IsNil() {
 				t.Fatal("Expected Some(42), got Nil")
@@ -406,8 +405,7 @@ func TestOption(t *testing.T) {
 		})
 
 		t.Run("Failed cast (incompatible types)", func(t *testing.T) {
-			var input string = "not an int"
-			got := Cast[int](input)
+			got := Cast[int]("not an int")
 
 			if got.IsValue() {
 				t.Error("Expected Nil when casting string to int")
@@ -415,8 +413,7 @@ func TestOption(t *testing.T) {
 		})
 
 		t.Run("Cast to interface", func(t *testing.T) {
-			var input any = bytes.NewBufferString("hello")
-			got := Cast[io.Reader](input)
+			got := Cast[io.Reader](bytes.NewBufferString("hello"))
 
 			if got.IsNil() {
 				t.Error("Expected Some(io.Reader), got Nil")

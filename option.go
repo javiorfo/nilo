@@ -1,7 +1,11 @@
 // Package nilo provides a generic Option type that can be used to represent a value that may or may not be present.
 package nilo
 
-import "iter"
+import (
+	"iter"
+	"reflect"
+	"strconv"
+)
 
 // Option is a generic type that represents an option value.
 // An `Option` can either be `Value`, containing a value of type `T`, or `Nil`,
@@ -279,9 +283,30 @@ func (o *Option[T]) Insert(value T) {
 //
 //	opt := Cast[int](anyValue)
 func Cast[T any](value any) Option[T] {
-	v, ok := value.(T)
-	if ok {
+	val := reflect.ValueOf(value)
+	targetType := reflect.TypeFor[T]()
+
+	if v, ok := value.(T); ok {
 		return Value(v)
+	}
+
+	if val.Kind() == reflect.String {
+		s := val.String()
+		switch targetType.Kind() {
+		case reflect.Int:
+			if i, err := strconv.Atoi(s); err == nil {
+				return Value(any(i).(T))
+			}
+		case reflect.Float64:
+			if f, err := strconv.ParseFloat(s, 64); err == nil {
+				return Value(any(f).(T))
+			}
+		}
+	}
+
+	if val.Type().ConvertibleTo(targetType) {
+		convertedValue := val.Convert(targetType)
+		return Value(convertedValue.Interface().(T))
 	}
 	return Nil[T]()
 }
