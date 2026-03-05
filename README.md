@@ -187,7 +187,7 @@ func Ok[T any](value T, err error) Option[T]
 func Nil[T any]() Option[T]
 func Value[T any](value T) Option[T]
 func Ptr[T any](value *T) Option[T]
-func Cast[T any](value T) Option[T]
+func Cast[T, V any](value V) Option[T]
 ```
 
 ---
