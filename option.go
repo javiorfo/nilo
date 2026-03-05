@@ -2,6 +2,7 @@
 package nilo
 
 import (
+	"fmt"
 	"iter"
 	"reflect"
 	"strconv"
@@ -275,23 +276,39 @@ func (o *Option[T]) Insert(value T) {
 	*o = Value(value)
 }
 
-// Cast attempts to assert the value any to type T.
+// Cast attempts to assert the value V to type T.
 // If the type assertion is successful, it returns an Option containing the value.
 // If the assertion fails (e.g., incompatible types or i is nil), it returns a Nil Option.
 //
 // Example:
 //
 //	opt := Cast[int](anyValue)
-func Cast[T any](value any) Option[T] {
-	val := reflect.ValueOf(value)
-	targetType := reflect.TypeFor[T]()
-
-	if v, ok := value.(T); ok {
+func Cast[T any, V any](value V) Option[T] {
+	if v, ok := any(value).(T); ok {
 		return Value(v)
 	}
 
-	if val.Kind() == reflect.String {
-		s := val.String()
+	val := reflect.ValueOf(value)
+	targetType := reflect.TypeFor[T]()
+
+	if targetType.Kind() == reflect.String {
+		var s string
+		switch val.Kind() {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			s = strconv.FormatInt(val.Int(), 10)
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			s = strconv.FormatUint(val.Uint(), 10)
+		case reflect.Float32, reflect.Float64:
+			s = strconv.FormatFloat(val.Float(), 'f', -1, 64)
+		case reflect.Bool:
+			s = strconv.FormatBool(val.Bool())
+		default:
+			s = fmt.Sprint(value)
+		}
+		return Value(any(s).(T))
+	}
+
+	if s, ok := any(value).(string); ok {
 		switch targetType.Kind() {
 		case reflect.Int:
 			if i, err := strconv.Atoi(s); err == nil {
@@ -304,10 +321,10 @@ func Cast[T any](value any) Option[T] {
 		}
 	}
 
-	if val.Type().ConvertibleTo(targetType) {
-		convertedValue := val.Convert(targetType)
-		return Value(convertedValue.Interface().(T))
+	if val.IsValid() && val.Type().ConvertibleTo(targetType) {
+		return Value(val.Convert(targetType).Interface().(T))
 	}
+
 	return Nil[T]()
 }
 

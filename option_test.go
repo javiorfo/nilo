@@ -18,6 +18,13 @@ func (t testStruct) Default() testStruct {
 	return testStruct{"Default"}
 }
 
+type inter interface {
+	Method()
+}
+type test struct{}
+
+func (test) Method() {}
+
 func TestOption(t *testing.T) {
 	t.Run("AsValue", func(t *testing.T) {
 		t.Run("when value is present", func(t *testing.T) {
@@ -404,6 +411,18 @@ func TestOption(t *testing.T) {
 			}
 		})
 
+		t.Run("Successful cast to float", func(t *testing.T) {
+			var float float64 = 42
+			got := Cast[string](float)
+
+			if got.IsNil() {
+				t.Fatal("Expected Some(42), got Nil")
+			}
+			if got.AsValue() != "42" {
+				t.Fatal("Expected Some(42)")
+			}
+		})
+
 		t.Run("Failed cast (incompatible types)", func(t *testing.T) {
 			got := Cast[int]("not an int")
 
@@ -417,6 +436,15 @@ func TestOption(t *testing.T) {
 
 			if got.IsNil() {
 				t.Error("Expected Some(io.Reader), got Nil")
+			}
+		})
+
+		t.Run("Cast to implementation", func(t *testing.T) {
+			var inter inter = test{}
+			got := Cast[test](inter)
+
+			if got.IsNil() {
+				t.Error("Expected Some(Test), got Nil")
 			}
 		})
 	})
